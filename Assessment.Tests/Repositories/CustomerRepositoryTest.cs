@@ -102,6 +102,61 @@
             }
         }
 
+        [Fact]
+        public async Task UniqueCustomer_Success()
+        {
+            using (var context = new CustomerDbContext(this.Fixture.DbContext))
+            {
+                var repository = this.Fixture.Create(context);
+                var customer = CreateValidCustomer(3);
+
+                // Act
+                await repository.AddCustomer(customer);
+                var result = await repository.UniqueCustomer("Unique", "Name");
+
+                // Assert
+                Assert.True(result);
+            }
+        }
+
+        [Fact]
+        public async Task UniqueCustomer_CustomerExists()
+        {
+            using (var context = new CustomerDbContext(this.Fixture.DbContext))
+            {
+                var repository = this.Fixture.Create(context);
+                var customer = CreateValidCustomer(4);
+
+                // Act
+                await repository.AddCustomer(customer);
+                var result = await repository.UniqueCustomer(customer.FirstName, customer.LastName);
+
+                // Assert
+                Assert.False(result);
+            }
+        }
+
+        [Fact]
+        public async Task UniqueCustomer_ThrowsException()
+        {
+            // Arrange
+            // Force an exception by creating a DbContext without a database
+            var dbContext = new DbContextOptionsBuilder<CustomerDbContext>()
+                .Options;
+
+            using (var context = new CustomerDbContext(dbContext))
+            {
+                var repository = this.Fixture.Create(context);
+
+                // Act
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => repository.UniqueCustomer("Any", "Name"));
+
+                // Assert
+                Assert.NotNull(exception);
+                this.Fixture.LoggerMock.VerifyWasCalledContains("Error checking customer name in Customer database context; No database provider has been configured for this DbContext.", LogLevel.Error);
+            }
+        }
+
         private Customer CreateValidCustomer(int customerId)
         {
             return new Customer

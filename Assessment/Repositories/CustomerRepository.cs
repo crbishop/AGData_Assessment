@@ -28,7 +28,7 @@
         {
             try
             {
-                return await this.customerDbContext.Customer.FirstOrDefaultAsync(_ => _.Id == id);
+                return await this.customerDbContext.Customer.FirstOrDefaultAsync(cust => cust.Id == id);
             }
             catch (Exception ex)
             {
@@ -52,6 +52,23 @@
             catch (Exception ex)
             {
                 this.logger.LogError(ex, "Error saving customer to Customer database context; {exception_message}", ex.Message);
+
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> UniqueCustomer(string firstname, string lastname)
+        {
+            try
+            {
+                var result = await this.customerDbContext.Customer.FirstOrDefaultAsync(cust => cust.FirstName == firstname && cust.LastName == lastname);
+
+                return result == null;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error checking customer name in Customer database context; {exception_message}", ex.Message);
 
                 throw;
             }

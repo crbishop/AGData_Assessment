@@ -20,5 +20,13 @@
         /// <param name="customer">Customer.</param>
         /// <returns>Task of Customer.</returns>
         Task<Customer> AddCustomer(Customer customer);
+
+        /// <summary>
+        /// Check if this is a unique customer name.
+        /// </summary>
+        /// <param name="firstname">Customer firstname.</param>
+        /// <param name="lastname">Customer lastname.</param>
+        /// <returns>Task of bool.</returns>
+        Task<bool> UniqueCustomer(string firstname, string lastname);
     }
 }

@@ -36,6 +36,11 @@
             this.customerServiceMock.Setup(_ => _.AddCustomer(It.IsAny<CustomerInput>())).ReturnsAsync(expectedCustomer);
         }
 
+        public void SetupUniqueCustomer(bool isUnique)
+        {
+            this.customerRepositoryMock.Setup(_ => _.UniqueCustomer(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(isUnique);
+        }
+
         public void SetupGetCustomerByIdThrowsException(string exceptionMessage)
         {
             this.customerRepositoryMock.Setup(_ => _.GetCustomer(It.IsAny<int>())).ThrowsAsync(new Exception(exceptionMessage));
@@ -44,6 +49,11 @@
         public void SetupCreateCustomerThrowsException(string exceptionMessage)
         {
             this.customerServiceMock.Setup(_ => _.AddCustomer(It.IsAny<CustomerInput>())).ThrowsAsync(new Exception(exceptionMessage));
+        }
+
+        public void SetupUniqueCustomerThrowsException(string exceptionMessage)
+        {
+            this.customerRepositoryMock.Setup(_ => _.UniqueCustomer(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception(exceptionMessage));
         }
     }
 }

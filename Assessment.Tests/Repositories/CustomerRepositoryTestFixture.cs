@@ -1,7 +1,5 @@
 ﻿namespace Assessment.Tests.Repositories
 {
-    using System.Threading.Tasks;
-    using AgData_Assessment.Controllers;
     using Assessment.Data;
     using Assessment.Repositories;
     using Microsoft.EntityFrameworkCore;

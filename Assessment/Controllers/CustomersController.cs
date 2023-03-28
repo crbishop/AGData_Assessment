@@ -65,13 +65,14 @@ namespace AgData_Assessment.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateCustomer(CustomerInput? customerInput)
         {
-            if (customerInput == null)
-            {
-                return this.BadRequest();
-            }
-
             try
             {
+                var badRequestMessage = await this.ValidateCustomer(customerInput);
+                if (!string.IsNullOrWhiteSpace(badRequestMessage))
+                {
+                    return this.BadRequest(badRequestMessage);
+                }
+
                 var customer = await this.customerService.AddCustomer(customerInput);
 
                 return this.CreatedAtAction(nameof(this.GetCustomer), new { id = customer.Id }, customer);
@@ -81,6 +82,28 @@ namespace AgData_Assessment.Controllers
                 this.logger.LogError(ex, "Error creating a new customer; {exception_message}", ex.Message);
                 return this.StatusCode((int)HttpStatusCode.InternalServerError, "Error creating a new customer.");
             }
+        }
+
+        private async Task<string> ValidateCustomer(CustomerInput? customerInput)
+        {
+            if (customerInput == null)
+            {
+                return "Customer input cannot be null.";
+            }
+
+            if (string.IsNullOrWhiteSpace(customerInput.FirstName) || string.IsNullOrWhiteSpace(customerInput.LastName))
+            {
+                return "Customer name cannot be null or empty.";
+            }
+
+            // Check if first and last name is unique
+            if (!await this.customerRepository.UniqueCustomer(customerInput.FirstName, customerInput.LastName))
+            {
+                var customerName = customerInput.FirstName + " " + customerInput.LastName;
+                return $"Customer first and last name ({customerName}) already exists.";
+            }
+
+            return string.Empty;
         }
     }
 }
