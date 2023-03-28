@@ -1,5 +1,9 @@
 ﻿namespace Assessment
 {
+    using Assessment.Data;
+    using Assessment.Initializers;
+    using Assessment.Mappers;
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.OpenApi.Models;
 
     /// <summary>
@@ -27,7 +31,12 @@
         /// <param name="services">Service Collection.</param>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.ConfigureOptions(this.Configuration);
+            services.AddDbContext<CustomerDbContext>(options => options.UseInMemoryDatabase(databaseName: "Assessment"));
+
+            ApplicationServicesStartup.Configure(services);
+            DataServicesStartup.Configure(services);
+
+            services.AddAutoMapper(typeof(CustomerProfile));
 
             services.AddControllers();
 
