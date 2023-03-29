@@ -93,7 +93,7 @@
                 }
                 else
                 {
-                    custCache?.Add(newCustomer);
+                    custCache.Add(newCustomer);
                     this.cache.Set(CacheKeys.Customers, custCache);
                 }
             }
@@ -105,6 +105,38 @@
             }
 
             return newCustomer;
+        }
+
+        /// <inheritdoc/>
+        public async Task<Customer> UpdateCustomer(Customer customer)
+        {
+            var updatedCustomer = await this.customerRepository.UpdateCustomer(customer);
+
+            try
+            {
+                // Retrieve customer cache
+                // Get customer cache and either establish it if null
+                var custCache = this.cache.Get<List<Customer>?>(CacheKeys.Customers);
+
+                if (custCache == null)
+                {
+                    await this.GetCustomers();
+                }
+                else
+                {
+                    // Update Customer item based on Id
+                    custCache[custCache.FindIndex(cust => cust.Id == customer.Id)] = customer;
+                    this.cache.Set(CacheKeys.Customers, custCache);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error updating customer to Customer cache; {exception_message}", ex.Message);
+
+                throw;
+            }
+
+            return updatedCustomer;
         }
 
         /// <inheritdoc/>

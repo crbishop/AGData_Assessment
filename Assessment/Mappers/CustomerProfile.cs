@@ -14,8 +14,10 @@
         public CustomerProfile()
         {
             // The Created datetime would be better as a database trigger, but is good for now
+            // Only update Created if destination is null
             this.CreateMap<CustomerInput, Customer>()
-                .ForMember(dest => dest.Created, options => options.MapFrom(source => DateTime.Now));
+                .ForMember(dest => dest.Created, options => options.MapFrom((src, dest) => dest.Created ?? DateTime.Now))
+                .ForMember(dest => dest.Updated, options => options.MapFrom(source => DateTime.Now));
         }
     }
 }

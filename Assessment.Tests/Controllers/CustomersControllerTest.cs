@@ -252,6 +252,142 @@
         }
 
         [Fact]
+        public async Task UpdateCustomer_Success()
+        {
+            // Arrange
+            var customerInput = new CustomerInput
+            {
+                FirstName = "John",
+                LastName = "Doe",
+            };
+
+            var customerId = 1;
+            var customer = new Customer
+            {
+                Id = customerId,
+                FirstName = "John",
+                LastName = "Doe",
+                Address = "123 Test Ave",
+            };
+
+            this.fixture.SetupUniqueCustomer(true);
+            this.fixture.SetupGetCustomerById(customerId, customer);
+            this.fixture.SetupUpdateCustomer(customer);
+
+            var controller = this.fixture.Create();
+
+            // Act
+            var result = await controller.UpdateCustomer(customerId, customerInput);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+
+            var createdResult = (OkObjectResult)result;
+            Assert.Same(customer, createdResult.Value);
+        }
+
+        [Fact]
+        public async Task UpdateCustomer_NullInput()
+        {
+            // Arrange
+            var controller = this.fixture.Create();
+
+            // Act
+            var result = await controller.UpdateCustomer(1, null);
+
+            // Assert
+            var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
+            Assert.Equal((int)HttpStatusCode.BadRequest, objectResult.StatusCode);
+            Assert.Equal("Customer input cannot be null.", objectResult.Value);
+        }
+
+        [Theory]
+        [InlineData("John", "")]
+        [InlineData("", "Doe")]
+        [InlineData("", "")]
+        public async Task UpdateCustomer_EmptyName(string firstname, string lastname)
+        {
+            // Arrange
+            var customerInput = new CustomerInput
+            {
+                FirstName = firstname,
+                LastName = lastname,
+            };
+
+            var controller = this.fixture.Create();
+
+            // Act
+            var result = await controller.UpdateCustomer(1, customerInput);
+
+            // Assert
+            var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
+            Assert.Equal((int)HttpStatusCode.BadRequest, objectResult.StatusCode);
+            Assert.Equal("Customer name cannot be null or empty.", objectResult.Value);
+        }
+
+        [Fact]
+        public async Task UpdateCustomer_NameExists()
+        {
+            // Arrange
+            var customerInput = new CustomerInput
+            {
+                FirstName = "John",
+                LastName = "Doe",
+            };
+
+            this.fixture.SetupUniqueCustomer(false);
+
+            var controller = this.fixture.Create();
+
+            // Act
+            var result = await controller.UpdateCustomer(1, customerInput);
+
+            // Assert
+            var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
+            Assert.Equal((int)HttpStatusCode.BadRequest, objectResult.StatusCode);
+
+            var customerName = customerInput.FirstName + " " + customerInput.LastName;
+            Assert.Equal($"Customer first and last name ({customerName}) already exists.", objectResult.Value);
+        }
+
+        [Fact]
+        public async Task UpdateCustomer_ThrowsException()
+        {
+            // Arrange
+            var customerInput = new CustomerInput
+            {
+                FirstName = "John",
+                LastName = "Doe",
+            };
+
+            var customerId = 1;
+            var customer = new Customer
+            {
+                Id = customerId,
+                FirstName = "John",
+                LastName = "Doe",
+                Address = "123 Test Ave",
+            };
+
+            this.fixture.SetupUniqueCustomer(true);
+            this.fixture.SetupGetCustomerById(customerId, customer);
+
+            var exceptionMessage = "Exception message";
+            this.fixture.SetupUpdateCustomerThrowsException(exceptionMessage);
+
+            var controller = this.fixture.Create();
+
+            // Act
+            var result = await controller.UpdateCustomer(customerId, customerInput);
+
+            // Assert
+            var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, objectResult.StatusCode);
+
+            this.fixture.LoggerMock.VerifyWasCalledEquals($"Error updating a customer; {exceptionMessage}", LogLevel.Error);
+        }
+
+        [Fact]
         public async Task ValidateUniqueCustomer_ThrowsException()
         {
             // Arrange

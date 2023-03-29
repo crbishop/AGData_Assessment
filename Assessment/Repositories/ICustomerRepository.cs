@@ -19,5 +19,12 @@
         /// <param name="customer">Customer.</param>
         /// <returns>Task of Customer.</returns>
         Task<Customer> AddCustomer(Customer customer);
+
+        /// <summary>
+        /// Update Customer in Customer database.
+        /// </summary>
+        /// <param name="customer">Customer.</param>
+        /// <returns>Task of Customer.</returns>
+        Task<Customer> UpdateCustomer(Customer customer);
     }
 }

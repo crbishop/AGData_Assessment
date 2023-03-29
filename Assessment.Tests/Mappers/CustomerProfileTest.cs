@@ -16,7 +16,7 @@
         }
 
         [Fact]
-        public void CustomerInputToCustomerIsMapped()
+        public void NewCustomer_IsMapped()
         {
             var customerInput = new CustomerInput
             {
@@ -31,8 +31,39 @@
             Assert.Equal(customerInput.LastName, result.LastName);
             Assert.Equal(customerInput.Address, result.Address);
             
-            // Verify that the Created datetime is recent
-            Assert.True(DateTime.Now.AddSeconds(-5).Ticks < result.Created.Ticks);
+            // Verify that the Created and Updated datetime is recent
+            Assert.True(DateTime.Now.AddSeconds(-5).Ticks < result.Created?.Ticks);
+            Assert.True(DateTime.Now.AddSeconds(-5).Ticks < result.Updated.Ticks);
+        }
+
+        [Fact]
+        public void UpdatedCustomer_DoesNotChangeCreated()
+        {
+            // The Created date is only set initially and never updated
+            var customerInput = new CustomerInput
+            {
+                FirstName = "Jane",
+                LastName = "Doe",
+                Address = "555 Test Ave",
+            };
+
+            var customer = new Customer
+            {
+                Id = 1,
+                FirstName = "John",
+                LastName = "Doe",
+                Created = DateTime.Parse("03/29/2023 01:02:03"),
+            };
+
+            var result = this.Mapper.Map(customerInput, customer);
+
+            Assert.Equal(customerInput.FirstName, result.FirstName);
+            Assert.Equal(customerInput.LastName, result.LastName);
+            Assert.Equal(customerInput.Address, result.Address);
+
+            // Verify that the Created datetime is not changed and Updated datetime is recent
+            Assert.Equal(customer.Created, result.Created);
+            Assert.True(DateTime.Now.AddSeconds(-5).Ticks < result.Updated.Ticks);
         }
     }
 }

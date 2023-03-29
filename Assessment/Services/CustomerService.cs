@@ -41,12 +41,30 @@
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, "Error mapping customer input; {exception_message}", ex.Message);
+                this.logger.LogError(ex, "Error mapping customer add input; {exception_message}", ex.Message);
 
                 throw;
             }
 
             return await this.customerCacheManager.AddCustomer(customer);
+        }
+
+        /// <inheritdoc/>
+        public async Task<Customer> UpdateCustomer(CustomerInput customerInput, Customer customer)
+        {
+            try
+            {
+                // Map CustomerInput into an existing Customer object.
+                customer = this.mapper.Map(customerInput, customer);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error mapping customer update input; {exception_message}", ex.Message);
+
+                throw;
+            }
+
+            return await this.customerCacheManager.UpdateCustomer(customer);
         }
     }
 }

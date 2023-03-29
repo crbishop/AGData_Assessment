@@ -39,6 +39,12 @@
         /// Gets or sets the created datetime.
         /// </summary>
         [Column("created")]
-        public DateTimeOffset Created { get; set; }
+        public DateTimeOffset? Created { get; set; }
+
+        /// <summary>
+        /// Gets or sets the updated datetime.
+        /// </summary>
+        [Column("updated")]
+        public DateTimeOffset Updated { get; set; }
     }
 }

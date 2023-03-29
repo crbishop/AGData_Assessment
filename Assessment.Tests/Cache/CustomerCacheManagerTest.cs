@@ -164,6 +164,76 @@
         }
 
         [Fact]
+        public async Task UpdateCustomer_Success()
+        {
+            // Arrange
+            var customer1 = CreateValidCustomer(1);
+            var customer2 = new Customer
+            {
+                Id = 2,
+                FirstName = "BadFirst",
+                LastName = "BadLast",
+                Address = "BadAddress",
+                Created = DateTime.Parse("03/29/2023 01:02:03"),
+            };
+
+            var customerList = new List<Customer>
+            {
+                customer1,
+                customer2,
+            };
+
+            var updatedCustomer = new Customer
+            {
+                Id = customer2.Id,
+                FirstName = "GoodFirst",
+                LastName = "GoodLast",
+                Address = "GoodAddress",
+                Created = DateTime.Parse("03/29/2023 01:02:03"),
+            };
+
+            this.fixture.SetupUpdateCustomer(updatedCustomer);
+            this.fixture.SetupGetCustomers(customerList);
+
+            var cacheManager = this.fixture.Create();
+
+            // Setup cache
+            await cacheManager.GetCustomers();
+
+            // Act
+            var result = await cacheManager.UpdateCustomer(updatedCustomer);
+            Assert.Same(updatedCustomer, result);
+
+            // Second customer item was updated
+            var custCache = this.fixture.cache.Get<List<Customer>?>(CacheKeys.Customers);
+            var custUpdated = custCache?.FirstOrDefault(cust => cust.Id == updatedCustomer.Id);
+            Assert.Equal(updatedCustomer.FirstName, custUpdated?.FirstName);
+            Assert.Equal(updatedCustomer.LastName, custUpdated?.LastName);
+            Assert.Equal(updatedCustomer.Address, custUpdated?.Address);
+            Assert.Equal(customer2.Created, custUpdated?.Created);
+
+            // Cleanup
+            this.fixture.CleanupCache();
+        }
+
+        [Fact]
+        public async Task UpdateCustomer_ThrowsException()
+        {
+            var exceptionMessage = "Exception message";
+            this.fixture.SetupGetCustomersThrowsException(exceptionMessage);
+            this.fixture.SetupUpdateCustomer(new Customer());
+
+            var cacheManager = this.fixture.Create();
+
+            // Act
+            var exception = await Assert.ThrowsAsync<Exception>(() => cacheManager.UpdateCustomer(new Customer()));
+
+            // Assert
+            Assert.NotNull(exception);
+            this.fixture.LoggerMock.VerifyWasCalledContains($"Error updating customer to Customer cache", LogLevel.Error);
+        }
+
+        [Fact]
         public async Task UniqueCustomer_Success()
         {
             // Arrange

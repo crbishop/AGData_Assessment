@@ -28,6 +28,13 @@
         Task<Customer> AddCustomer(Customer customer);
 
         /// <summary>
+        /// Update Customer to Customer cache and database.
+        /// </summary>
+        /// <param name="customer">Customer.</param>
+        /// <returns>Task of Customer.</returns>
+        Task<Customer> UpdateCustomer(Customer customer);
+
+        /// <summary>
         /// Check if this is a unique customer name.
         /// </summary>
         /// <param name="firstname">Customer firstname.</param>

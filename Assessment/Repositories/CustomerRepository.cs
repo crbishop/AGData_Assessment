@@ -43,14 +43,32 @@
         {
             try
             {
-                await this.customerDbContext.AddAsync(customer);
-                this.customerDbContext.SaveChanges();
+                this.customerDbContext.Add(customer);
+                await this.customerDbContext.SaveChangesAsync();
 
                 return customer;
             }
             catch (Exception ex)
             {
                 this.logger.LogError(ex, "Error saving customer to Customer database context; {exception_message}", ex.Message);
+
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<Customer> UpdateCustomer(Customer customer)
+        {
+            try
+            {
+                this.customerDbContext.Update(customer);
+                await this.customerDbContext.SaveChangesAsync();
+
+                return customer;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error updating customer to Customer database context; {exception_message}", ex.Message);
 
                 throw;
             }

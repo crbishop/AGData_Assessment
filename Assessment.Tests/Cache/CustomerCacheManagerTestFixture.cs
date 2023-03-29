@@ -35,6 +35,11 @@
             this.customerRepositoryMock.Setup(_ => _.AddCustomer(It.IsAny<Customer>())).ReturnsAsync(expectedCustomer);
         }
 
+        public void SetupUpdateCustomer(Customer expectedCustomer)
+        {
+            this.customerRepositoryMock.Setup(_ => _.UpdateCustomer(It.IsAny<Customer>())).ReturnsAsync(expectedCustomer);
+        }
+
         public void SetupGetCustomersThrowsException(string exceptionMessage)
         {
             this.customerRepositoryMock.Setup(_ => _.GetCustomers()).ThrowsAsync(new Exception(exceptionMessage));

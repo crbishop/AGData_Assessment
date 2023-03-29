@@ -53,7 +53,7 @@ namespace AgData_Assessment.Controllers
         }
 
         /// <summary>
-        /// Gets exising customer.
+        /// Gets exising customer by Id.
         /// </summary>
         /// <param name="id">Customer id.</param>
         /// <returns>Customer.</returns>
@@ -105,6 +105,44 @@ namespace AgData_Assessment.Controllers
             {
                 this.logger.LogError(ex, "Error creating a new customer; {exception_message}", ex.Message);
                 return this.StatusCode((int)HttpStatusCode.InternalServerError, "Error creating a new customer.");
+            }
+        }
+
+        /// <summary>
+        /// Update a customer by Id.
+        /// </summary>
+        /// <param name="id">Customer id.</param>
+        /// <param name="customerInput">Customer Input.</param>
+        /// <returns>Customer.</returns>
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> UpdateCustomer(int id, CustomerInput? customerInput)
+        {
+            try
+            {
+                var badRequestMessage = await this.ValidateCustomer(customerInput);
+                if (!string.IsNullOrWhiteSpace(badRequestMessage))
+                {
+                    return this.BadRequest(badRequestMessage);
+                }
+
+                var customer = await this.customerCacheManager.GetCustomer(id);
+
+                if (customer == null)
+                {
+                    return this.NotFound();
+                }
+
+#pragma warning disable CS8604 // Possible null reference argument.
+                customer = await this.customerService.UpdateCustomer(customerInput, customer);
+#pragma warning restore CS8604 // Possible null reference argument.
+
+                return this.Ok(customer);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error updating a customer; {exception_message}", ex.Message);
+                return this.StatusCode((int)HttpStatusCode.InternalServerError, "Error updating a customer.");
             }
         }
 

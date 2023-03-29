@@ -106,6 +106,53 @@
             this.fixture.LoggerMock.VerifyWasCalledContains("Error saving customer to Customer database context; No database provider has been configured for this DbContext.", LogLevel.Error);
         }
 
+        [Fact]
+        public async Task UpdateCustomer_Success()
+        {
+            // Arrange
+            using var context = new CustomerDbContext(this.fixture.DbContext);
+            var repository = this.fixture.Create(context);
+            var customer = CreateValidCustomer(8);
+
+            await repository.AddCustomer(customer);
+
+            // Update customer values
+            customer.FirstName = "UpdatedFirst";
+            customer.LastName = "UpdatedLast";
+            customer.Address = "UpdatedAddress";
+
+            // Act
+            await repository.UpdateCustomer(customer);
+
+            var dbCustomer = context.Customer.FirstOrDefault(_ => _.Id == customer.Id);
+
+            // Assert
+            Assert.Equal(customer.Id, dbCustomer?.Id);
+            Assert.Equal(customer.FirstName, dbCustomer?.FirstName);
+            Assert.Equal(customer.LastName, dbCustomer?.LastName);
+            Assert.Equal(customer.Address, dbCustomer?.Address);
+            Assert.Equal(customer.Created, dbCustomer?.Created);
+        }
+
+        [Fact]
+        public async Task UpdateCustomer_ThrowsException()
+        {
+            // Arrange
+            // Force an exception by creating a DbContext without a database
+            var dbContext = new DbContextOptionsBuilder<CustomerDbContext>()
+                .Options;
+
+            using var context = new CustomerDbContext(dbContext);
+            var repository = this.fixture.Create(context);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => repository.UpdateCustomer(new Customer()));
+
+            // Assert
+            Assert.NotNull(exception);
+            this.fixture.LoggerMock.VerifyWasCalledContains("Error updating customer to Customer database context; No database provider has been configured for this DbContext.", LogLevel.Error);
+        }
+
         private Customer CreateValidCustomer(int customerId)
         {
             return new Customer
