@@ -8,11 +8,10 @@
     public interface ICustomerRepository
     {
         /// <summary>
-        /// Get existing customer.
+        /// Get all existing customers.
         /// </summary>
-        /// <param name="id">Id of customer.</param>
-        /// <returns>Task of Customer.</returns>
-        Task<Customer?> GetCustomer(int id);
+        /// <returns>Task of List of Customers.</returns>
+        Task<List<Customer>?> GetCustomers();
 
         /// <summary>
         /// Add Customer to Customer database.
@@ -20,13 +19,5 @@
         /// <param name="customer">Customer.</param>
         /// <returns>Task of Customer.</returns>
         Task<Customer> AddCustomer(Customer customer);
-
-        /// <summary>
-        /// Check if this is a unique customer name.
-        /// </summary>
-        /// <param name="firstname">Customer firstname.</param>
-        /// <param name="lastname">Customer lastname.</param>
-        /// <returns>Task of bool.</returns>
-        Task<bool> UniqueCustomer(string firstname, string lastname);
     }
 }

@@ -1,8 +1,8 @@
 ﻿namespace Assessment.Tests.Controllers
 {
     using AgData_Assessment.Controllers;
+    using Assessment.Cache;
     using Assessment.Models;
-    using Assessment.Repositories;
     using Assessment.Services;
     using Microsoft.Extensions.Logging;
     using Moq;
@@ -10,25 +10,30 @@
     public class CustomersControllerTestFixture
     {
         private readonly Mock<ICustomerService> customerServiceMock;
-        private readonly Mock<ICustomerRepository> customerRepositoryMock;
+        private readonly Mock<ICustomerCacheManager> customerCacheManagerMock;
 
         public Mock<ILogger<CustomersController>> LoggerMock { get; }
 
         public CustomersControllerTestFixture()
         {
             this.customerServiceMock = new Mock<ICustomerService>();
-            this.customerRepositoryMock = new Mock<ICustomerRepository>();
+            this.customerCacheManagerMock = new Mock<ICustomerCacheManager>();
             this.LoggerMock = new Mock<ILogger<CustomersController>>();
         }
 
         public CustomersController Create()
         {
-            return new CustomersController(this.customerServiceMock.Object, this.customerRepositoryMock.Object, this.LoggerMock.Object);
+            return new CustomersController(this.customerServiceMock.Object, this.customerCacheManagerMock.Object, this.LoggerMock.Object);
+        }
+
+        public void SetupGetCustomers(List<Customer>? expectedCustomers)
+        {
+            this.customerCacheManagerMock.Setup(_ => _.GetCustomers()).ReturnsAsync(expectedCustomers);
         }
 
         public void SetupGetCustomerById(int customerId, Customer? expectedCustomer)
         {
-            this.customerRepositoryMock.Setup(_ => _.GetCustomer(customerId)).ReturnsAsync(expectedCustomer);
+            this.customerCacheManagerMock.Setup(_ => _.GetCustomer(customerId)).ReturnsAsync(expectedCustomer);
         }
 
         public void SetupCreateCustomer(Customer expectedCustomer)
@@ -38,12 +43,17 @@
 
         public void SetupUniqueCustomer(bool isUnique)
         {
-            this.customerRepositoryMock.Setup(_ => _.UniqueCustomer(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(isUnique);
+            this.customerCacheManagerMock.Setup(_ => _.UniqueCustomer(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(isUnique);
+        }
+
+        public void SetupGetCustomersThrowsException(string exceptionMessage)
+        {
+            this.customerCacheManagerMock.Setup(_ => _.GetCustomers()).ThrowsAsync(new Exception(exceptionMessage));
         }
 
         public void SetupGetCustomerByIdThrowsException(string exceptionMessage)
         {
-            this.customerRepositoryMock.Setup(_ => _.GetCustomer(It.IsAny<int>())).ThrowsAsync(new Exception(exceptionMessage));
+            this.customerCacheManagerMock.Setup(_ => _.GetCustomer(It.IsAny<int>())).ThrowsAsync(new Exception(exceptionMessage));
         }
 
         public void SetupCreateCustomerThrowsException(string exceptionMessage)
@@ -53,7 +63,7 @@
 
         public void SetupUniqueCustomerThrowsException(string exceptionMessage)
         {
-            this.customerRepositoryMock.Setup(_ => _.UniqueCustomer(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception(exceptionMessage));
+            this.customerCacheManagerMock.Setup(_ => _.UniqueCustomer(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new Exception(exceptionMessage));
         }
     }
 }

@@ -33,6 +33,8 @@
         {
             services.AddDbContext<CustomerDbContext>(options => options.UseInMemoryDatabase(databaseName: "Assessment"));
 
+            services.AddMemoryCache();
+
             ApplicationServicesStartup.Configure(services);
             DataServicesStartup.Configure(services);
 

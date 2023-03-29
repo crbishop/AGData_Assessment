@@ -1,8 +1,8 @@
 ﻿namespace Assessment.Tests.Services
 {
+    using Assessment.Cache;
     using Assessment.Mappers;
     using Assessment.Models;
-    using Assessment.Repositories;
     using Assessment.Services;
     using AutoMapper;
     using Microsoft.Extensions.Logging;
@@ -10,13 +10,13 @@
 
     public class CustomerServiceTestFixture
     {
-        public Mock<ICustomerRepository> CustomerRepositoryMock { get; }
+        public Mock<ICustomerCacheManager> CustomerCacheManagerMock { get; }
         public IMapper Mapper { get; set; }
         public Mock<ILogger<ICustomerService>> LoggerMock { get; }
 
         public CustomerServiceTestFixture()
         {
-            this.CustomerRepositoryMock = new Mock<ICustomerRepository>();
+            this.CustomerCacheManagerMock = new Mock<ICustomerCacheManager>();
             this.LoggerMock = new Mock<ILogger<ICustomerService>>();
 
             var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<CustomerProfile>());
@@ -25,12 +25,12 @@
      
         public ICustomerService Create()
         {
-            return new CustomerService(this.CustomerRepositoryMock.Object, this.Mapper, this.LoggerMock.Object);
+            return new CustomerService(this.CustomerCacheManagerMock.Object, this.Mapper, this.LoggerMock.Object);
         }
 
         public void SetupAddCustomer()
         {
-            this.CustomerRepositoryMock.Setup(_ => _.AddCustomer(It.IsAny<Customer>()));
+            this.CustomerCacheManagerMock.Setup(_ => _.AddCustomer(It.IsAny<Customer>()));
         }
 
         public void ResetAutoMapper()
@@ -47,7 +47,7 @@
 
         public void ResetRepositoryMocks()
         {
-            this.CustomerRepositoryMock.Reset();
+            this.CustomerCacheManagerMock.Reset();
             this.SetupAddCustomer();
         }
     }

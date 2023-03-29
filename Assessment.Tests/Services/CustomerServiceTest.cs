@@ -25,7 +25,7 @@
             await service.AddCustomer(new CustomerInput());
 
             // Assert
-            this.fixture.CustomerRepositoryMock.Verify(_ => _.AddCustomer(It.IsAny<Customer>()), Times.Once);
+            this.fixture.CustomerCacheManagerMock.Verify(_ => _.AddCustomer(It.IsAny<Customer>()), Times.Once);
         }
 
         [Fact]

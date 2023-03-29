@@ -17,6 +17,54 @@
         }
 
         [Fact]
+        public async Task GetCustomers_Success()
+        {
+            // Arrange
+            var customerList = new List<Customer>
+            {
+                new Customer
+                {
+                    Id = 1,
+                    FirstName = "John",
+                    LastName = "Doe",
+                    Address = "123 Test Ave",
+                }
+            };
+
+            this.fixture.SetupGetCustomers(customerList);
+
+            var controller = this.fixture.Create();
+
+            // Act
+            var result = await controller.GetCustomers();
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+
+            var okResult = (OkObjectResult)result;
+            Assert.Same(customerList, okResult.Value);
+        }
+
+        [Fact]
+        public async Task GetCustomers_ThrowsException()
+        {
+            // Arrange
+            var exceptionMessage = "Exception message";
+            this.fixture.SetupGetCustomersThrowsException(exceptionMessage);
+
+            var controller = this.fixture.Create();
+
+            // Act
+            var result = await controller.GetCustomers();
+
+            // Assert
+            var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, objectResult.StatusCode);
+
+            this.fixture.LoggerMock.VerifyWasCalledEquals($"Error retrieving list of all customers; {exceptionMessage}", LogLevel.Error);
+        }
+
+        [Fact]
         public async Task GetCustomerById_Success()
         {
             // Arrange

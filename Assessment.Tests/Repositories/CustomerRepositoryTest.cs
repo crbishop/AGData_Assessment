@@ -8,77 +8,83 @@
 
     public class CustomerRepositoryTest : IClassFixture<CustomerRepositoryTestFixture>
     {
-        private CustomerRepositoryTestFixture Fixture { get; }
+        private CustomerRepositoryTestFixture fixture { get; }
 
         public CustomerRepositoryTest(CustomerRepositoryTestFixture fixture)
         {
-            this.Fixture = fixture;
+            this.fixture = fixture;
         }
 
         [Fact]
-        public async Task GetCustomer_Success()
+        public async Task GetCustomers_Success()
         {
             // Arrange
-            using (var context = new CustomerDbContext(this.Fixture.DbContext))
-            {
-                var repository = this.Fixture.Create(context);
-                var customer = CreateValidCustomer(1);
-                await repository.AddCustomer(customer);
+            // Use special database to not clash with other tests
+            var dbContext = new DbContextOptionsBuilder<CustomerDbContext>()
+                .UseInMemoryDatabase(databaseName: "GetCustomersTest1")
+                .Options;
+            using var context = new CustomerDbContext(dbContext);
+            var repository = this.fixture.Create(context);
 
-                // Act
-                var result = await repository.GetCustomer(customer.Id);
+            // Add customer 1
+            var customer1 = CreateValidCustomer(2);
+            await repository.AddCustomer(customer1);
 
-                // Assert
-                Assert.Equal(customer.Id, result?.Id);
-                Assert.Equal(customer.FirstName, result?.FirstName);
-                Assert.Equal(customer.LastName, result?.LastName);
-                Assert.Equal(customer.Address, result?.Address);
-                Assert.Equal(customer.Created, result?.Created);
-            }
+            // Add customer 2
+            var customer2 = CreateValidCustomer(3);
+            await repository.AddCustomer(customer2);
+
+            // Act
+            var result = await repository.GetCustomers();
+
+            // Assert
+            Assert.Equal(2, result?.Count);
+            Assert.Equal(customer1.Id, result?.First().Id);
+            Assert.Equal(customer1.FirstName, result?.First().FirstName);
+            Assert.Equal(customer1.LastName, result?.First().LastName);
+            Assert.Equal(customer1.Address, result?.First().Address);
+            Assert.Equal(customer1.Created, result?.First().Created);
+            Assert.Equal(customer2.Id, result?.Last().Id);
         }
 
         [Fact]
-        public async Task GetCustomer_ThrowsException()
+        public async Task GetCustomers_ThrowsException()
         {
             // Arrange
             // Force an exception by creating a DbContext without a database
             var dbContext = new DbContextOptionsBuilder<CustomerDbContext>()
                 .Options;
 
-            using (var context = new CustomerDbContext(dbContext))
-            {
-                var repository = this.Fixture.Create(context);
+            using var context = new CustomerDbContext(dbContext);
+            var repository = this.fixture.Create(context);
 
-                // Act
-                var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => repository.GetCustomer(1));
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => repository.GetCustomers());
 
-                // Assert
-                Assert.NotNull(exception);
-                this.Fixture.LoggerMock.VerifyWasCalledContains("Error retrieving customer data; No database provider has been configured for this DbContext.", LogLevel.Error);
-            }
+            // Assert
+            Assert.NotNull(exception);
+            this.fixture.LoggerMock.VerifyWasCalledContains("Error retrieving all customers; No database provider has been configured for this DbContext.", LogLevel.Error);
         }
 
         [Fact]
         public async Task AddCustomer_Success()
         {
             // Arrange
-            using (var context = new CustomerDbContext(this.Fixture.DbContext))
-            {
-                var repository = this.Fixture.Create(context);
-                var customer = CreateValidCustomer(2);
+            using var context = new CustomerDbContext(this.fixture.DbContext);
+            var repository = this.fixture.Create(context);
+            var customer = CreateValidCustomer(7);
 
-                // Act
-                await repository.AddCustomer(customer);
+            // Act
+            await repository.AddCustomer(customer);
 
-                var dbCustomer = context.Customer.FirstOrDefault(_ => _.Id == customer.Id);
+            var dbCustomer = context.Customer.FirstOrDefault(_ => _.Id == customer.Id);
 
-                // Assert
-                Assert.Equal(customer.Id, dbCustomer?.Id);
-                Assert.Equal(customer.FirstName, dbCustomer?.FirstName);
-                Assert.Equal(customer.LastName, dbCustomer?.LastName);
-                Assert.Equal(customer.Address, dbCustomer?.Address);
-                Assert.Equal(customer.Created, dbCustomer?.Created);
-            }
+            // Assert
+            Assert.Equal(customer.Id, dbCustomer?.Id);
+            Assert.Equal(customer.FirstName, dbCustomer?.FirstName);
+            Assert.Equal(customer.LastName, dbCustomer?.LastName);
+            Assert.Equal(customer.Address, dbCustomer?.Address);
+            Assert.Equal(customer.Created, dbCustomer?.Created);
         }
 
         [Fact]
@@ -89,72 +95,15 @@
             var dbContext = new DbContextOptionsBuilder<CustomerDbContext>()
                 .Options;
 
-            using (var context = new CustomerDbContext(dbContext))
-            {
-                var repository = this.Fixture.Create(context);
+            using var context = new CustomerDbContext(dbContext);
+            var repository = this.fixture.Create(context);
 
-                // Act
-                var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => repository.AddCustomer(new Customer()));
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => repository.AddCustomer(new Customer()));
 
-                // Assert
-                Assert.NotNull(exception);
-                this.Fixture.LoggerMock.VerifyWasCalledContains("Error saving customer to Customer database context; No database provider has been configured for this DbContext.", LogLevel.Error);
-            }
-        }
-
-        [Fact]
-        public async Task UniqueCustomer_Success()
-        {
-            using (var context = new CustomerDbContext(this.Fixture.DbContext))
-            {
-                var repository = this.Fixture.Create(context);
-                var customer = CreateValidCustomer(3);
-
-                // Act
-                await repository.AddCustomer(customer);
-                var result = await repository.UniqueCustomer("Unique", "Name");
-
-                // Assert
-                Assert.True(result);
-            }
-        }
-
-        [Fact]
-        public async Task UniqueCustomer_CustomerExists()
-        {
-            using (var context = new CustomerDbContext(this.Fixture.DbContext))
-            {
-                var repository = this.Fixture.Create(context);
-                var customer = CreateValidCustomer(4);
-
-                // Act
-                await repository.AddCustomer(customer);
-                var result = await repository.UniqueCustomer(customer.FirstName, customer.LastName);
-
-                // Assert
-                Assert.False(result);
-            }
-        }
-
-        [Fact]
-        public async Task UniqueCustomer_ThrowsException()
-        {
-            // Arrange
-            // Force an exception by creating a DbContext without a database
-            var dbContext = new DbContextOptionsBuilder<CustomerDbContext>()
-                .Options;
-
-            using (var context = new CustomerDbContext(dbContext))
-            {
-                var repository = this.Fixture.Create(context);
-
-                // Act
-                var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => repository.UniqueCustomer("Any", "Name"));
-
-                // Assert
-                Assert.NotNull(exception);
-                this.Fixture.LoggerMock.VerifyWasCalledContains("Error checking customer name in Customer database context; No database provider has been configured for this DbContext.", LogLevel.Error);
-            }
+            // Assert
+            Assert.NotNull(exception);
+            this.fixture.LoggerMock.VerifyWasCalledContains("Error saving customer to Customer database context; No database provider has been configured for this DbContext.", LogLevel.Error);
         }
 
         private Customer CreateValidCustomer(int customerId)

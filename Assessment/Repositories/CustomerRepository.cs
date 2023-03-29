@@ -24,15 +24,15 @@
         }
 
         /// <inheritdoc/>
-        public async Task<Customer?> GetCustomer(int id)
+        public async Task<List<Customer>?> GetCustomers()
         {
             try
             {
-                return await this.customerDbContext.Customer.FirstOrDefaultAsync(cust => cust.Id == id);
+                return await this.customerDbContext.Customer.ToListAsync();
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, "Error retrieving customer data; {exception_message}", ex.Message);
+                this.logger.LogError(ex, "Error retrieving all customers; {exception_message}", ex.Message);
 
                 throw;
             }
@@ -43,7 +43,6 @@
         {
             try
             {
-                this.customerDbContext.Customer.Add(customer);
                 await this.customerDbContext.AddAsync(customer);
                 this.customerDbContext.SaveChanges();
 
@@ -52,23 +51,6 @@
             catch (Exception ex)
             {
                 this.logger.LogError(ex, "Error saving customer to Customer database context; {exception_message}", ex.Message);
-
-                throw;
-            }
-        }
-
-        /// <inheritdoc/>
-        public async Task<bool> UniqueCustomer(string firstname, string lastname)
-        {
-            try
-            {
-                var result = await this.customerDbContext.Customer.FirstOrDefaultAsync(cust => cust.FirstName == firstname && cust.LastName == lastname);
-
-                return result == null;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "Error checking customer name in Customer database context; {exception_message}", ex.Message);
 
                 throw;
             }

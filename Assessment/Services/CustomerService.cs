@@ -1,7 +1,7 @@
 ﻿namespace Assessment.Services
 {
+    using Assessment.Cache;
     using Assessment.Models;
-    using Assessment.Repositories;
     using AutoMapper;
 
     /// <summary>
@@ -9,22 +9,22 @@
     /// </summary>
     public class CustomerService : ICustomerService
     {
-        private readonly ICustomerRepository customerRepository;
+        private readonly ICustomerCacheManager customerCacheManager;
         private readonly IMapper mapper;
         private readonly ILogger<ICustomerService> logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomerService"/> class.
         /// </summary>
-        /// <param name="customerRepository">Customer Repository.</param>
+        /// <param name="customerCacheManager">Customer cache manager.</param>
         /// <param name="mapper">Mapper.</param>
         /// <param name="logger">CustomerService logger.</param>
         public CustomerService(
-            ICustomerRepository customerRepository,
+            ICustomerCacheManager customerCacheManager,
             IMapper mapper,
             ILogger<ICustomerService> logger)
         {
-            this.customerRepository = customerRepository;
+            this.customerCacheManager = customerCacheManager;
             this.mapper = mapper;
             this.logger = logger;
         }
@@ -46,7 +46,7 @@
                 throw;
             }
 
-            return await this.customerRepository.AddCustomer(customer);
+            return await this.customerCacheManager.AddCustomer(customer);
         }
     }
 }

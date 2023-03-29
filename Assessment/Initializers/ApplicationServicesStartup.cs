@@ -1,5 +1,6 @@
 ﻿namespace Assessment.Initializers
 {
+    using Assessment.Cache;
     using Assessment.Services;
     using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -15,6 +16,7 @@
         public static void Configure(IServiceCollection serviceCollection)
         {
             serviceCollection.TryAddTransient<ICustomerService, CustomerService>();
+            serviceCollection.TryAddTransient<ICustomerCacheManager, CustomerCacheManager>();
         }
     }
 }
