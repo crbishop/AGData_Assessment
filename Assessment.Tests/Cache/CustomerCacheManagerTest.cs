@@ -234,6 +234,56 @@
         }
 
         [Fact]
+        public async Task DeleteCustomer_Success()
+        {
+            // Arrange
+            var customer1 = CreateValidCustomer(1);
+            var customer2 = CreateValidCustomer(2);
+
+            var customerList = new List<Customer>
+            {
+                customer1,
+                customer2,
+            };
+
+            this.fixture.SetupDeleteCustomer();
+            this.fixture.SetupGetCustomers(customerList);
+
+            var cacheManager = this.fixture.Create();
+
+            // Setup cache
+            await cacheManager.GetCustomers();
+
+            // Act
+            await cacheManager.DeleteCustomer(customer2);
+
+            // Second customer item was deleted
+            var custCache = this.fixture.cache.Get<List<Customer>?>(CacheKeys.Customers);
+            var custDeleted = custCache?.FirstOrDefault(cust => cust.Id == customer2.Id);
+            Assert.Null(custDeleted);
+
+            // Cleanup
+            this.fixture.CleanupCache();
+        }
+
+        [Fact]
+        public async Task DeleteCustomer_ThrowsException()
+        {
+            var exceptionMessage = "Exception message";
+            this.fixture.SetupGetCustomersThrowsException(exceptionMessage);
+            this.fixture.SetupDeleteCustomer();
+
+            var cacheManager = this.fixture.Create();
+
+            // Act
+            var exception = await Assert.ThrowsAsync<Exception>(() => cacheManager.DeleteCustomer(new Customer()));
+
+            // Assert
+            Assert.NotNull(exception);
+            this.fixture.LoggerMock.VerifyWasCalledContains($"Error deleting customer from Customer cache", LogLevel.Error);
+        }
+
+        [Fact]
         public async Task UniqueCustomer_Success()
         {
             // Arrange

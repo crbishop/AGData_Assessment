@@ -84,7 +84,7 @@
             try
             {
                 // Retrieve customer cache
-                // Get customer cache and either establish it if null
+                // Get customer cache and establish it if empty
                 var custCache = this.cache.Get<List<Customer>?>(CacheKeys.Customers);
 
                 if (custCache == null)
@@ -115,7 +115,7 @@
             try
             {
                 // Retrieve customer cache
-                // Get customer cache and either establish it if null
+                // Get customer cache and establish it if empty
                 var custCache = this.cache.Get<List<Customer>?>(CacheKeys.Customers);
 
                 if (custCache == null)
@@ -137,6 +137,36 @@
             }
 
             return updatedCustomer;
+        }
+
+        /// <inheritdoc/>
+        public async Task DeleteCustomer(Customer customer)
+        {
+            await this.customerRepository.DeleteCustomer(customer);
+
+            try
+            {
+                // Retrieve customer cache
+                // Get customer cache and establish it if empty
+                var custCache = this.cache.Get<List<Customer>?>(CacheKeys.Customers);
+
+                if (custCache == null)
+                {
+                    await this.GetCustomers();
+                }
+                else
+                {
+                    // Remove Customer item
+                    custCache.Remove(customer);
+                    this.cache.Set(CacheKeys.Customers, custCache);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error deleting customer from Customer cache; {exception_message}", ex.Message);
+
+                throw;
+            }
         }
 
         /// <inheritdoc/>
@@ -173,7 +203,7 @@
         // Check existing cache and establish/reset if necessary
         private async Task<List<Customer>?> CheckCache()
         {
-            // Get customer cache and either establish it if null
+            // Get customer cache and establish it if empty
             var custCache = this.cache.Get<List<Customer>?>(CacheKeys.Customers);
 
             if (custCache == null)

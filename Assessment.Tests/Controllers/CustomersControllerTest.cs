@@ -351,6 +351,67 @@
         }
 
         [Fact]
+        public async Task DeleteCustomerById_Success()
+        {
+            // Arrange
+            var customerId = 1;
+            var customer = new Customer
+            {
+                Id = customerId,
+                FirstName = "John",
+                LastName = "Doe",
+                Address = "123 Test Ave",
+            };
+
+            this.fixture.SetupGetCustomerById(customerId, customer);
+            this.fixture.SetupDeleteCustomerById();
+
+            var controller = this.fixture.Create();
+
+            // Act
+            var result = await controller.DeleteCustomer(customerId);
+
+            // Assert
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteCustomerById_NullResponse()
+        {
+            // Arrange
+            var customerId = 1;
+
+            this.fixture.SetupGetCustomerById(customerId, null);
+
+            var controller = this.fixture.Create();
+
+            // Act
+            var result = await controller.DeleteCustomer(customerId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteCustomerById_ThrowsException()
+        {
+            // Arrange
+            var exceptionMessage = "Exception message";
+            this.fixture.SetupDeleteCustomerThrowsException(exceptionMessage);
+
+            var controller = this.fixture.Create();
+
+            // Act
+            var result = await controller.DeleteCustomer(1);
+
+            // Assert
+            var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, objectResult.StatusCode);
+
+            this.fixture.LoggerMock.VerifyWasCalledEquals($"Error deleting customer data; {exceptionMessage}", LogLevel.Error);
+        }
+
+        [Fact]
         public async Task UpdateCustomer_ThrowsException()
         {
             // Arrange

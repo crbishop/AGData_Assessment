@@ -36,14 +36,19 @@
             this.customerCacheManagerMock.Setup(_ => _.GetCustomer(customerId)).ReturnsAsync(expectedCustomer);
         }
 
-        public void SetupCreateCustomer(Customer expectedCustomer)
+        public void SetupCreateCustomer(Customer createdCustomer)
         {
-            this.customerServiceMock.Setup(_ => _.AddCustomer(It.IsAny<CustomerInput>())).ReturnsAsync(expectedCustomer);
+            this.customerServiceMock.Setup(_ => _.AddCustomer(It.IsAny<CustomerInput>())).ReturnsAsync(createdCustomer);
         }
 
-        public void SetupUpdateCustomer(Customer expectedCustomer)
+        public void SetupUpdateCustomer(Customer updatedCustomer)
         {
-            this.customerServiceMock.Setup(_ => _.UpdateCustomer(It.IsAny<CustomerInput>(), It.IsAny<Customer>())).ReturnsAsync(expectedCustomer);
+            this.customerServiceMock.Setup(_ => _.UpdateCustomer(It.IsAny<CustomerInput>(), It.IsAny<Customer>())).ReturnsAsync(updatedCustomer);
+        }
+
+        public void SetupDeleteCustomerById()
+        {
+            this.customerCacheManagerMock.Setup(_ => _.DeleteCustomer(It.IsAny<Customer>()));
         }
 
         public void SetupUniqueCustomer(bool isUnique)
@@ -64,6 +69,11 @@
         public void SetupCreateCustomerThrowsException(string exceptionMessage)
         {
             this.customerServiceMock.Setup(_ => _.AddCustomer(It.IsAny<CustomerInput>())).ThrowsAsync(new Exception(exceptionMessage));
+        }
+
+        public void SetupDeleteCustomerThrowsException(string exceptionMessage)
+        {
+            this.customerCacheManagerMock.Setup(_ => _.DeleteCustomer(It.IsAny<Customer>())).ThrowsAsync(new Exception(exceptionMessage));
         }
 
         public void SetupUpdateCustomerThrowsException(string exceptionMessage)

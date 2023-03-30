@@ -35,6 +35,13 @@
         Task<Customer> UpdateCustomer(Customer customer);
 
         /// <summary>
+        /// Delete Customer from Customer cache and database.
+        /// </summary>
+        /// <param name="customer">Customer.</param>
+        /// <returns>Task.</returns>
+        Task DeleteCustomer(Customer customer);
+
+        /// <summary>
         /// Check if this is a unique customer name.
         /// </summary>
         /// <param name="firstname">Customer firstname.</param>

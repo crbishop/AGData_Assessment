@@ -30,14 +30,19 @@
             this.customerRepositoryMock.Setup(_ => _.GetCustomers()).ReturnsAsync(expectedCustomers);
         }
 
-        public void SetupAddCustomer(Customer expectedCustomer)
+        public void SetupAddCustomer(Customer createdCustomer)
         {
-            this.customerRepositoryMock.Setup(_ => _.AddCustomer(It.IsAny<Customer>())).ReturnsAsync(expectedCustomer);
+            this.customerRepositoryMock.Setup(_ => _.AddCustomer(It.IsAny<Customer>())).ReturnsAsync(createdCustomer);
         }
 
-        public void SetupUpdateCustomer(Customer expectedCustomer)
+        public void SetupUpdateCustomer(Customer updatedCustomer)
         {
-            this.customerRepositoryMock.Setup(_ => _.UpdateCustomer(It.IsAny<Customer>())).ReturnsAsync(expectedCustomer);
+            this.customerRepositoryMock.Setup(_ => _.UpdateCustomer(It.IsAny<Customer>())).ReturnsAsync(updatedCustomer);
+        }
+
+        public void SetupDeleteCustomer()
+        {
+            this.customerRepositoryMock.Setup(_ => _.DeleteCustomer(It.IsAny<Customer>()));
         }
 
         public void SetupGetCustomersThrowsException(string exceptionMessage)

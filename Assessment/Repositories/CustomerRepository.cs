@@ -50,7 +50,7 @@
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, "Error saving customer to Customer database context; {exception_message}", ex.Message);
+                this.logger.LogError(ex, "Error saving customer to Customer database; {exception_message}", ex.Message);
 
                 throw;
             }
@@ -68,7 +68,23 @@
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, "Error updating customer to Customer database context; {exception_message}", ex.Message);
+                this.logger.LogError(ex, "Error updating customer to Customer database; {exception_message}", ex.Message);
+
+                throw;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task DeleteCustomer(Customer customer)
+        {
+            try
+            {
+                this.customerDbContext.Remove(customer);
+                await this.customerDbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error deleting customer from Customer database; {exception_message}", ex.Message);
 
                 throw;
             }

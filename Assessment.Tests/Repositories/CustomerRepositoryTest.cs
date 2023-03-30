@@ -103,7 +103,7 @@
 
             // Assert
             Assert.NotNull(exception);
-            this.fixture.LoggerMock.VerifyWasCalledContains("Error saving customer to Customer database context; No database provider has been configured for this DbContext.", LogLevel.Error);
+            this.fixture.LoggerMock.VerifyWasCalledContains("Error saving customer to Customer database; No database provider has been configured for this DbContext.", LogLevel.Error);
         }
 
         [Fact]
@@ -150,7 +150,49 @@
 
             // Assert
             Assert.NotNull(exception);
-            this.fixture.LoggerMock.VerifyWasCalledContains("Error updating customer to Customer database context; No database provider has been configured for this DbContext.", LogLevel.Error);
+            this.fixture.LoggerMock.VerifyWasCalledContains("Error updating customer to Customer database; No database provider has been configured for this DbContext.", LogLevel.Error);
+        }
+
+        [Fact]
+        public async Task DeleteCustomer_Success()
+        {
+            // Arrange
+            using var context = new CustomerDbContext(this.fixture.DbContext);
+            var repository = this.fixture.Create(context);
+
+            // Add 2 customers
+            var customer1 = CreateValidCustomer(9);
+            await repository.AddCustomer(customer1);
+
+            var customer2 = CreateValidCustomer(10);
+            await repository.AddCustomer(customer2);
+
+            // Act
+            await repository.DeleteCustomer(customer2);
+
+            var dbCustomer = context.Customer.FirstOrDefault(_ => _.Id == customer2.Id);
+
+            // Assert
+            Assert.Null(dbCustomer);
+        }
+
+        [Fact]
+        public async Task DeleteCustomer_ThrowsException()
+        {
+            // Arrange
+            // Force an exception by creating a DbContext without a database
+            var dbContext = new DbContextOptionsBuilder<CustomerDbContext>()
+                .Options;
+
+            using var context = new CustomerDbContext(dbContext);
+            var repository = this.fixture.Create(context);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => repository.DeleteCustomer(new Customer()));
+
+            // Assert
+            Assert.NotNull(exception);
+            this.fixture.LoggerMock.VerifyWasCalledContains("Error deleting customer from Customer database; No database provider has been configured for this DbContext.", LogLevel.Error);
         }
 
         private Customer CreateValidCustomer(int customerId)

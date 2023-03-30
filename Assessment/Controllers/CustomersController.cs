@@ -146,6 +146,35 @@ namespace AgData_Assessment.Controllers
             }
         }
 
+        /// <summary>
+        /// Delete a customer by Id.
+        /// </summary>
+        /// <param name="id">Customer id.</param>
+        /// <returns>No content.</returns>
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> DeleteCustomer(int id)
+        {
+            try
+            {
+                var customer = await this.customerCacheManager.GetCustomer(id);
+
+                if (customer == null)
+                {
+                    return this.NotFound();
+                }
+
+                await this.customerCacheManager.DeleteCustomer(customer);
+
+                return this.NoContent();
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error deleting customer data; {exception_message}", ex.Message);
+                return this.StatusCode((int)HttpStatusCode.InternalServerError, "Error retrieving customer data.");
+            }
+        }
+
         private async Task<string> ValidateCustomer(CustomerInput? customerInput)
         {
             if (customerInput == null)

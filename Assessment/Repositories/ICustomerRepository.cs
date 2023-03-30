@@ -26,5 +26,12 @@
         /// <param name="customer">Customer.</param>
         /// <returns>Task of Customer.</returns>
         Task<Customer> UpdateCustomer(Customer customer);
+
+        /// <summary>
+        /// Delete Customer from Customer database.
+        /// </summary>
+        /// <param name="customer">Customer.</param>
+        /// <returns>Task.</returns>
+        Task DeleteCustomer(Customer customer);
     }
 }
